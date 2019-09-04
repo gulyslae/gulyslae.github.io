@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "SLAE32 Assignment 2 extramile - revshell with 127.0.0.1"
+title: "SLAE32 Assignment 2 extramile - revshell to 127.0.0.1"
 excerpt: "a little extramile for assignment 2: i'm using a remote address that contain null bytes"
 ---
     ; name     : tcprevshell

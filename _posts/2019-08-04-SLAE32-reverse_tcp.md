@@ -5,9 +5,10 @@ excerpt: asm code and comment for my revshell
 ---
     ; name     : tcprevshell
     ; author     : Sandro "guly" Zaccarini SLAE-1037
-    ; purpose    : the program will create a new connection to a given ip/port and present a shell to it
-    ;            this code has been written for SLAE32 assignment 2
-    ; references : https://syscalls.kernelgrok.com/ , /usr/include/linux/net.h , man socketcall
+    ; purpose    : the program will create a new connection to a given ip/port and present
+    ;              a shell to it this code has been written for SLAE32 assignment 2
+    ; references : https://syscalls.kernelgrok.com/ , /usr/include/linux/net.h ,
+    ;              man socketcall
     ; license    : CC-BY-NC-SA
     ;
     ; high level flow:

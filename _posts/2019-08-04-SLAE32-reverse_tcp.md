@@ -1,6 +1,6 @@
 ---
 layout: post
-title: SLAE32  Assignment 2 - reverse shell
+title: SLAE32 Assignment 2 - reverse shell
 excerpt: asm code and comment for my revshell
 ---
     ; name     : tcprevshell

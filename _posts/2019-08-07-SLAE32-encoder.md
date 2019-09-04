@@ -12,7 +12,7 @@ this assignment has been splitted in 2 (actually 4) exercises:
 i did the steps also in python3 to confirm that everything's ok: it's not THAT easy to debug an idea using asm :)
 
 used shellcode is a slightly modified version of execve-stack. i remove .data section and all functions to have a straight code.
-you can read it at 04_execve_stack.asm at [links](https://github.com/gulyslae/SLAE32)
+you can read it at 04_execve_stack.asm at [https://github.com/gulyslae/SLAE32](https://github.com/gulyslae/SLAE32)
 python code has been committed to github as well
 
 ## XOR

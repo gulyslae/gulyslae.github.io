@@ -334,4 +334,4 @@ excerpt: asm code and comment for my bindshell
     ; 65534 converted in hex (0xFFFE), then little endian
     bindport equ 0xFEFF
     
-; This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/
+*This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/

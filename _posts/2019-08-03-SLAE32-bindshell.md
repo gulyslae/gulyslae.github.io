@@ -4,7 +4,7 @@ title: SLAE32  Assignment 1 - bindshell
 excerpt: asm code and comment for my bindshell
 ---
 
-    ; name     : bindshell
+    ; name       : bindshell
     ; author     : Sandro "guly" Zaccarini SLAE-1037
     ; purpose    : this program will open a listening socket on 0.0.0.0, waits for one
     ;              connection and spawn a shell

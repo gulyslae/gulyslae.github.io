@@ -146,8 +146,7 @@ python code has been committed to github as well
     ;
     ; every shellcode will terminate with an added byte, that is the real last one add 1
     ; to have a 0x00 when xored.
-    ; for example, a shellcode like 0x414345 will be writte in .data as
-    0x41434546
+    ; for example, a shellcode like 0x414345 will be writte in .data as 0x41434546
     ;
     ; please note that i don't need to make this code nullbyte proof because it will be
     ; runt just locally ; but i'm doing it 0x00 free as extra-mile

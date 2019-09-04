@@ -20,4 +20,5 @@ shellcodes original url are:
 
 i'm not discussing the morphism here, please look at .asm source code at https://github.com/gulyslae/SLAE32
 
-*This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/
+*SLAE-1037*
+*This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/*

@@ -231,3 +231,5 @@ excerpt: "a little extramile for assignment 2: i'm using a remote address that c
     section .data
     ; 65532 converted in hex, then little endian
     rport equ 0xFCFF
+
+*This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/*

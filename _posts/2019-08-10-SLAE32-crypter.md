@@ -12,7 +12,7 @@ that's why i choose to use a user friendly language (python) and a
 ready-to-use library (pyDes) to use a well known - even if old and
 superseeded - encryption algorithm: DES
 
-i'll post python code to https://github.com/gulyslae/SLAE32 as 07_crypter.py
+i'll post python code to [links](https://github.com/gulyslae/SLAE32) as 07_crypter.py
 
 usage is pretty simple, just python2 e|d payload
 

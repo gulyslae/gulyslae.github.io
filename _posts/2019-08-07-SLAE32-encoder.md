@@ -103,8 +103,6 @@ python code has been committed to github as well
     mlen equ $-plainShellcode
     
       write_shellcode:
-    nop
-    nop
     xor eax,eax
     xor ebx,ebx
     xor edx,edx

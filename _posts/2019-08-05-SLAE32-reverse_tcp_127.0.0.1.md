@@ -3,6 +3,11 @@ layout: post
 title: "SLAE32 Assignment 2 extramile - revshell to 127.0.0.1"
 excerpt: "a little extramile for assignment 2: i'm using a remote address that contain null bytes"
 ---
+
+04th sept 2019, edit:  
+this shellcode has been accepted by exploit-db:  
+https://www.exploit-db.com/shellcodes/47352
+
     ; name       : tcprevshell
     ; author     : Sandro "guly" Zaccarini SLAE-1037
     ; purpose    : the program will create a new connection to given ip/port and present

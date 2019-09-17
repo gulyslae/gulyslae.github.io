@@ -18,9 +18,9 @@ shellcodes original url are:
 * [http://shell-storm.org/shellcode/files/shellcode-890.php](http://shell-storm.org/shellcode/files/shellcode-890.php)
 
 i'm not discussing the morphism here, please look at .asm source code at [https://github.com/gulyslae/SLAE64](https://github.com/gulyslae/SLAE64)
-* [https://github.com/gulyslae/SLAE64/605-my.asm](https://github.com/gulyslae/SLAE64/605-my.asm)
-* [https://github.com/gulyslae/SLAE64/822-my.asm](https://github.com/gulyslae/SLAE64/822-my.asm)
-* [https://github.com/gulyslae/SLAE64/890-my.asm](https://github.com/gulyslae/SLAE64/890-my.asm)
+* [https://github.com/gulyslae/SLAE64/605-my.asm](https://github.com/gulyslae/SLAE64/06-shellstorm/605-my.asm)
+* [https://github.com/gulyslae/SLAE64/822-my.asm](https://github.com/gulyslae/SLAE64/06-shellstorm/822-my.asm)
+* [https://github.com/gulyslae/SLAE64/890-my.asm](https://github.com/gulyslae/SLAE64/06-shellstorm/890-my.asm)
 
 *SLAE64-1497*
 *This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/*

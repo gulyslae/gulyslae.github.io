@@ -1,7 +1,7 @@
 ---
 layout: post
 title: SLAE64 Assignment 1 - password protected tcp bindshell
-exceprt: asm code and comments for my pass protected tcp bindshell
+excerpt: asm code and comments for my pass protected tcp bindshell
 ---
 
     ; name       : bindshell

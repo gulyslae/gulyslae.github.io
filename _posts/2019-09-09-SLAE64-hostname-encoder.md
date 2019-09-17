@@ -18,5 +18,8 @@ i think i'll work on this code again in the future, but not now.
 
 you can find the code on [my github](https://github.com/gulyslae/SLAE64/tree/master/xx-extramile)
 
+and an asciinema rec of it working here:
+[https://asciinema.org/a/bYP8go6GpwgvW4IXAaCDCaB11](https://asciinema.org/a/bYP8go6GpwgvW4IXAaCDCaB11)
+
 *SLAE64-1497*
 *This blog post has been created for completing the requirements of the SecurityTube Linux Assembly Expert certification: http://securitytube-training.com/online-courses/securitytube-linux-assembly-expert/*

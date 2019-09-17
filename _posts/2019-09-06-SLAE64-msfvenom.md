@@ -70,17 +70,17 @@ let's explore 0x40009f:
 
 here is the stack when RIP is at 0x40009f:
 
-> 0x00007fffffffe420│+0x0000: 0x0000000000400098  →  0x5600696d616f6877 ("whoami"?)        ← $rsp
-> 0x00007fffffffe428│+0x0008: 0x0000000000000000
-> 0x00007fffffffe430│+0x0010: 0x000000000000632d ("-c"?)   ← $rsi
-> 0x00007fffffffe438│+0x0018: 0x0068732f6e69622f ("/bin/sh"?)      ← $rdi
+    0x00007fffffffe420│+0x0000: 0x0000000000400098  →  0x5600696d616f6877 ("whoami"?)        ← $rsp
+    0x00007fffffffe428│+0x0008: 0x0000000000000000
+    0x00007fffffffe430│+0x0010: 0x000000000000632d ("-c"?)   ← $rsi
+    0x00007fffffffe438│+0x0018: 0x0068732f6e69622f ("/bin/sh"?)      ← $rdi
 
 and at 0x4000a1 (mov rsi,rsp):
 
-> 0x00007fffffffe410│+0x0000: 0x00007fffffffe438  →  0x0068732f6e69622f ("/bin/sh"?)       ← $rsp
-> 0x00007fffffffe418│+0x0008: 0x00007fffffffe430  →  0x000000000000632d ("-c"?)
-> 0x00007fffffffe420│+0x0010: 0x0000000000400098  →  0x5600696d616f6877 ("whoami"?)
-> 0x00007fffffffe428│+0x0018: 0x0000000000000000
+    0x00007fffffffe410│+0x0000: 0x00007fffffffe438  →  0x0068732f6e69622f ("/bin/sh"?)       ← $rsp
+    0x00007fffffffe418│+0x0008: 0x00007fffffffe430  →  0x000000000000632d ("-c"?)
+    0x00007fffffffe420│+0x0010: 0x0000000000400098  →  0x5600696d616f6877 ("whoami"?)
+    0x00007fffffffe428│+0x0018: 0x0000000000000000
 
 we clearly see that the code executes /bin/sh -c whoami
 

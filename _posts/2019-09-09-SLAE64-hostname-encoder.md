@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  SLAE64 extramile: hostname encoder/decoder
+title:  SLAE64 extramile - hostname encoder/decoder
 excerpt: encodes (and decodes) a payload using xor against sys_uname
 ---
 
